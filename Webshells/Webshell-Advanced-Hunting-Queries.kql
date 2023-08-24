@@ -1,0 +1,14 @@
+// Looking for processes created by IIS
+DeviceProcessEvents
+| where InitiatingProcessFileName =~ 'w3wp.exe'
+| project-reorder Timestamp, DeviceName, ProcessCommandLine
+
+// Searching for files created by IIS
+DeviceFileEvents
+| where InitiatingProcessFileName =~ 'w3wp.exe'
+
+// Finding the identities of your webservers
+DeviceProcessEvents
+| where FileName =~ 'w3wp.exe'
+| parse ProcessCommandLine with "w3wp.exe " * '-ap "' AppPool:string '"' *
+| summarize arg_max(Timestamp, DeviceName, AccountDomain, AccountName) by DeviceId, AppPool
